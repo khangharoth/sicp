@@ -86,7 +86,7 @@
       (map (fn [v] (lookup v dictionary))
         (rest form)))))
 
-(defn pattern  [rule] (first  rule))
+(defn pattern [rule] (first rule))
 (defn skeleton [rule] (cadr rule))
 
 (defn skeleton-evaluation? [skeleton]
@@ -108,10 +108,10 @@
     (defn scan [rules]
       (if (nil? rules) exp
         (let [dictionary (match (pattern (first rules))
-                            exp
-                            (make-empty-dictionary))]
+                           exp
+                           make-empty-dictionary)]
           (if (= dictionary 'failed) (scan (rest rules))
-            (fn  (instantiate (skeleton (first rules)) dictionary))))))
+            (fn (instantiate (skeleton (first rules)) dictionary))))))
     (scan the-rules))
 
   (defn simplify-exp [exp]
@@ -121,8 +121,26 @@
   simplify-exp)
 
 
-(def pat-1 '(+ (* (? x) (? y)) (? y)))
-(def exp-1 '(+ (* 3 x) x))
+(def deriv-rules
+  '(
+     (dd (?c c) (? v)) 0
+     (dd (?v v) (? v)) 1
+     (dd (?v u) (? v)) 0
+     (dd (+ (? x1) (? x2)) (? v)) (+ (dd ($ x1) ($ v))
+                                    (dd ($ x2) ($ v)))
+     (dd (* (? x1) (? x2)) (? v)) (+ (* ($ x1) (dd ($ x2) ($ v)))
+                                    (* (dd ($ x1) ($ v)) ($ x2)))
+     (dd (** (? x) (?c n)) (? v)) (* (* ($ n) (+ ($ x) ($ (- n 1))))
+                                    (dd ($ x) ($ v)))
+     ))
 
-(println (evaluate '(+ x x) '((y x) (x 3))))
-(println (match pat-1 exp-1 make-empty-dictionary))
+(def dsimp  (simplifier deriv-rules))
+
+(println (dsimp '(dd (+ x y) x)))
+
+
+;(def pat-1 '(+ (* (? x) (? y)) (? y)))
+;(def exp-1 '(+ (* 3 x) x))
+;
+;(println (evaluate '(+ x x) '((y x) (x 3))))
+;(println (match pat-1 exp-1 make-empty-dictionary))
