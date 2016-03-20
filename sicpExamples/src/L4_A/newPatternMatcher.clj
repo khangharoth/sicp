@@ -96,7 +96,16 @@
   (cond (nil? skeleton) '()
     (atomic? skeleton) skeleton
     (skeleton-evaluation? skeleton)
-      (evaluate (evaluation-expression skeleton)
-        dictionary)
+    (evaluate (evaluation-expression skeleton)
+      dictionary)
     :else (cons (instantiate (first skeleton) dictionary)
             (instantiate (rest skeleton) dictionary))))
+
+
+(defn pattern [rule] (first rule))
+(defn skeleton [rule] (cadr rule))
+
+(def pat-1 '(+ (* (?x) (?y)) (?y)))
+(def exp-1 '(+ (*  3    x  )   x))
+
+(println (match pat-1 exp-1 make-empty-dictionary))
