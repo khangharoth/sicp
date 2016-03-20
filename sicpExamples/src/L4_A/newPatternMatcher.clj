@@ -9,6 +9,7 @@
   (first (rest list)))
 
 (def make-empty-dictionary '())
+(def user-initial-environment '())
 
 ; Expressions
 
@@ -77,3 +78,25 @@
             (match (first pattern)
               (first expression)
               dictionary))))
+
+(defn skeleton-evaluation? [skeleton]
+  (if (list? skeleton) (= (first skeleton) '$) false))
+
+(defn evaluation-expression [evaluation] (cadr evaluation))
+
+(defn evaluate [form dictionary]
+  (if (atomic? form)
+    (lookup form dictionary)
+    (apply (eval (lookup (first form) dictionary)
+             user-initial-environment)
+      (map (fn [v] (lookup v dictionary))
+        (rest form)))))
+
+(defn instantiate [skeleton dictionary]
+  (cond (nil? skeleton) '()
+    (atomic? skeleton) skeleton
+    (skeleton-evaluation? skeleton)
+      (evaluate (evaluation-expression skeleton)
+        dictionary)
+    :else (cons (instantiate (first skeleton) dictionary)
+            (instantiate (rest skeleton) dictionary))))
