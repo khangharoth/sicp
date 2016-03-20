@@ -44,7 +44,7 @@
 
         ))))
 
-(defn isEmpty?[exp]
+(defn isEmpty? [exp]
   (and (list? exp) (empty? exp)))
 
 (defn match [pattern expression dictionary]
@@ -86,6 +86,39 @@
       (map (fn [v] (lookup v dictionary))
         (rest form)))))
 
+(defn pattern  [rule] (first  rule))
+(defn skeleton [rule] (cadr rule))
+
+(defn skeleton-evaluation? [skeleton]
+  (if (list? skeleton) (= (first skeleton) '$) false))
+
+(defn evaluation-expression [evaluation] (cadr evaluation))
+
+(defn instantiate [skeleton dictionary]
+  (cond (nil? skeleton) '()
+    (atomic? skeleton) skeleton
+    (skeleton-evaluation? skeleton)
+    (evaluate (evaluation-expression skeleton)
+      dictionary)
+    :else (cons (instantiate (first skeleton) dictionary)
+            (instantiate (rest skeleton) dictionary))))
+
+(defn simplifier [the-rules]
+  (defn try-rules [exp,fn]
+    (defn scan [rules]
+      (if (nil? rules) exp
+        (let [dictionary (match (pattern (first rules))
+                            exp
+                            (make-empty-dictionary))]
+          (if (= dictionary 'failed) (scan (rest rules))
+            (fn  (instantiate (skeleton (first rules)) dictionary))))))
+    (scan the-rules))
+
+  (defn simplify-exp [exp]
+    (try-rules
+      (if (compound? exp) (map simplify-exp exp)
+        exp) simplify-exp))
+  simplify-exp)
 
 
 (def pat-1 '(+ (* (? x) (? y)) (? y)))
