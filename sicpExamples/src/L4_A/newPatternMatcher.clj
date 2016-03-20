@@ -104,7 +104,10 @@
 (defn pattern [rule] (first rule))
 (defn skeleton [rule] (cadr rule))
 
-(def pat-1 '(+ (* (?x) (?y)) (?y)))
-(def exp-1 '(+ (* 3 x) x))
+;(def pat-1 '(+ (* (?x) (?y)) (?y)))
+;(def exp-1 '(+ (* 3 x) x))
+
+(def pat-1 '(+ (?x) (?y)))
+(def exp-1 '(+ 3 x))
 
 (println (match pat-1 exp-1 make-empty-dictionary))
