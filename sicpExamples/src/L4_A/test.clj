@@ -44,10 +44,12 @@
 
         ))))
 
-
+(defn isEmpty?[exp]
+  (and (list? exp) (empty? exp)))
 
 (defn match [pattern expression dictionary]
   (cond (and (nil? pattern) (nil? expression)) dictionary
+    (and (isEmpty? pattern) (isEmpty? expression)) dictionary
     (= dictionary 'failed) 'failed
 
     (atomic? pattern) (if
@@ -72,21 +74,8 @@
               (first expression)
               dictionary))))
 
-;(def pat-1 '(+ (* (?x) (?y)) (?y)))
-;(def exp-1 '(+ (* 3 x) x))
-
-(def pat-1 '(+ (? x) (? y)))
-(def exp-1 '(+ 3 x))
-
-(let [
-       oneLevelPat (rest pat-1)
-       oneLevelExp (rest exp-1)
-       ]
-;  ;  (println (arbitrary-expression? (first oneLevelPat)))
-;  (println (rest (first oneLevelPat)))
-   (println (match oneLevelPat oneLevelExp (match (first oneLevelPat) (first oneLevelExp) make-empty-dictionary)))
-
-  )
+(def pat-1 '(+ (* (? x) (? y)) (? y)))
+(def exp-1 '(+ (* 3 x) x))
 
 
-;(println (match pat-1 exp-1 make-empty-dictionary))
+(println (match pat-1 exp-1 make-empty-dictionary))
