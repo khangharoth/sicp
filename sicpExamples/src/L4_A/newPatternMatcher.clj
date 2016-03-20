@@ -55,24 +55,23 @@
 (defn match [pattern expression dictionary]
   (cond (and (nil? pattern) (nil? expression)) dictionary
     (= dictionary 'failed) 'failed
-    (atomic? pattern)
-    (if (atomic? expression)
-      (if (= pattern expression)
-        dictionary
-        'failed)
-      'failed)
 
-    (arbitrary-constant? pattern)
-    (if (constant? expression)
-      (extend-dictionary pattern expression dictionary)
-      'failed)
-    (arbitrary-variable? pattern)
-    (if (variable? expression)
-      (extend-dictionary pattern expression dictionary)
-      'failed)
-    (arbitrary-expression? pattern)
-    (extend-dictionary pattern expression dictionary)
+    (atomic? pattern) (if
+                        (atomic? expression) (if (= pattern expression) dictionary
+                                               'failed)
+                        'failed)
+
+    (arbitrary-constant? pattern) (if
+                                    (constant? expression) (extend-dictionary pattern expression dictionary)
+                                    'failed)
+
+    (arbitrary-variable? pattern) (if (variable? expression) (extend-dictionary pattern expression dictionary)
+                                    'failed)
+
+    (arbitrary-expression? pattern) (extend-dictionary pattern expression dictionary)
+
     (atomic? expression) 'failed
+
     :else (match (rest pattern)
             (rest expression)
             (match (first pattern)
@@ -106,6 +105,6 @@
 (defn skeleton [rule] (cadr rule))
 
 (def pat-1 '(+ (* (?x) (?y)) (?y)))
-(def exp-1 '(+ (*  3    x  )   x))
+(def exp-1 '(+ (* 3 x) x))
 
 (println (match pat-1 exp-1 make-empty-dictionary))
