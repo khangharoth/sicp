@@ -74,8 +74,22 @@
               (first expression)
               dictionary))))
 
+(defn lookup [var dictionary]
+  (let [v (assq var dictionary)]
+    (if (nil? v) var
+      (cadr v))))
+
+(defn evaluate [form dictionary]
+  (if (atomic? form)
+    (lookup form dictionary)
+    (apply (eval (lookup (first form) dictionary))
+      (map (fn [v] (lookup v dictionary))
+        (rest form)))))
+
+
+
 (def pat-1 '(+ (* (? x) (? y)) (? y)))
 (def exp-1 '(+ (* 3 x) x))
 
-
+(println (evaluate '(+ x x) '((y x) (x 3))))
 (println (match pat-1 exp-1 make-empty-dictionary))
