@@ -96,28 +96,12 @@
 (defn instantiate [skeleton dictionary]
   (cond (nil? skeleton) '()
     (atomic? skeleton) skeleton
+    (isEmpty? skeleton) skeleton
     (skeleton-evaluation? skeleton)
     (evaluate (evaluation-expression skeleton)
       dictionary)
     :else (cons (instantiate (first skeleton) dictionary)
             (instantiate (rest skeleton) dictionary))))
-
-(defn simplifier [the-rules]
-  (defn try-rules [exp,fn]
-    (defn scan [rules]
-      (if (nil? rules) exp
-        (let [dictionary (match (pattern (first rules))
-                           exp
-                           make-empty-dictionary)]
-          (if (= dictionary 'failed) (scan (rest rules))
-            (fn (instantiate (skeleton (first rules)) dictionary))))))
-    (scan the-rules))
-
-  (defn simplify-exp [exp]
-    (try-rules
-      (if (compound? exp) (map simplify-exp exp)
-        exp) simplify-exp))
-  simplify-exp)
 
 
 (def deriv-rules
@@ -128,25 +112,25 @@
      ((dd (+ (? x1) (? x2)) (? v)) (+ (dd ($ x1) ($ v))
                                      (dd ($ x2) ($ v))))
      ))
-
-(def dsimp (simplifier deriv-rules))
-
-;(println (dsimp '(dd (+ x y) x)))
-(defn doscan [deriv-rules,exp]
-  (if (nil? deriv-rules) 'failed
-    (let [dictionary (match (pattern (first deriv-rules))
-                       exp
-                       make-empty-dictionary)]
-      (if (= dictionary 'failed) (doscan (rest deriv-rules) exp)
-        (println dictionary)
+(defn try-rules [exp]
+  (defn scan [deriv-rules,exp]
+    (if (or (nil? deriv-rules) (isEmpty? deriv-rules)) exp
+      (let [dictionary (match (pattern (first deriv-rules))
+                         exp
+                         make-empty-dictionary)]
+        (if (= dictionary 'failed) (scan (rest deriv-rules) exp)
+          (instantiate (skeleton (first deriv-rules)) dictionary)
+          )
         )
-      )
-    ))
-(println (doscan deriv-rules '(dd (+ x y) x)))
+      ))
+  (scan deriv-rules exp)
+  )
 
-;(def pat-1 '(+ (* (? x) (? y)) (? y)))
-;(def exp-1 '(+ (* 3 x) x))
-;
-;(println (evaluate '(+ x x) '((y x) (x 3))))
-;(println (match pat-1 exp-1 make-empty-dictionary))
+(defn simplify-exp [exp]
+  (try-rules
+    (if (compound? exp) (map simplify-exp exp)
+      exp) ))
+
+
+(println (try-rules '(dd (+ x y) x)))
 
