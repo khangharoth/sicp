@@ -1,6 +1,5 @@
-(ns
-  ^{:author kuldeep}
-  L4_A.test)
+(ns ^{:author kuldeep}
+  L4_A.workingTest)
 
 (defn atomic? [exp]
   (not (list? exp)))
@@ -128,19 +127,26 @@
      ((dd (?v u) (? v)) 0)
      ((dd (+ (? x1) (? x2)) (? v)) (+ (dd ($ x1) ($ v))
                                      (dd ($ x2) ($ v))))
-     ((dd (* (? x1) (? x2)) (? v)) (+ (* ($ x1) (dd ($ x2) ($ v)))
-                                     (* (dd ($ x1) ($ v)) ($ x2))))
-     ((dd (** (? x) (?c n)) (? v)) (* (* ($ n) (+ ($ x) ($ (- n 1))))
-                                     (dd ($ x) ($ v))))
      ))
 
 (def dsimp (simplifier deriv-rules))
 
-(println (dsimp '(dd (+ x y) x)))
-
+;(println (dsimp '(dd (+ x y) x)))
+(defn doscan [deriv-rules,exp]
+  (if (nil? deriv-rules) 'failed
+    (let [dictionary (match (pattern (first deriv-rules))
+                       exp
+                       make-empty-dictionary)]
+      (if (= dictionary 'failed) (doscan (rest deriv-rules) exp)
+        (println dictionary)
+        )
+      )
+    ))
+(println (doscan deriv-rules '(dd (+ x y) x)))
 
 ;(def pat-1 '(+ (* (? x) (? y)) (? y)))
 ;(def exp-1 '(+ (* 3 x) x))
 ;
 ;(println (evaluate '(+ x x) '((y x) (x 3))))
 ;(println (match pat-1 exp-1 make-empty-dictionary))
+
