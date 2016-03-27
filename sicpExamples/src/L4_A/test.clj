@@ -97,6 +97,7 @@
 (defn instantiate [skeleton dictionary]
   (cond (nil? skeleton) '()
     (atomic? skeleton) skeleton
+    (isEmpty? skeleton) skeleton
     (skeleton-evaluation? skeleton)
     (evaluate (evaluation-expression skeleton)
       dictionary)
@@ -106,7 +107,7 @@
 (defn simplifier [the-rules]
   (defn try-rules [exp,fn]
     (defn scan [rules]
-      (if (nil? rules) exp
+      (if (or (nil? rules) (isEmpty? rules)) exp
         (let [dictionary (match (pattern (first rules))
                            exp
                            make-empty-dictionary)]
@@ -137,10 +138,3 @@
 (def dsimp (simplifier deriv-rules))
 
 (println (dsimp '(dd (+ x y) x)))
-
-
-;(def pat-1 '(+ (* (? x) (? y)) (? y)))
-;(def exp-1 '(+ (* 3 x) x))
-;
-;(println (evaluate '(+ x x) '((y x) (x 3))))
-;(println (match pat-1 exp-1 make-empty-dictionary))
