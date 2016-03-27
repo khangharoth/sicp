@@ -104,23 +104,6 @@
     :else (cons (instantiate (first skeleton) dictionary)
             (instantiate (rest skeleton) dictionary))))
 
-(defn simplifier [the-rules]
-  (defn try-rules [exp,fn]
-    (defn scan [rules]
-      (if (or (nil? rules) (isEmpty? rules)) exp
-        (let [dictionary (match (pattern (first rules))
-                           exp
-                           make-empty-dictionary)]
-          (if (= dictionary 'failed) (scan (rest rules))
-            (fn (instantiate (skeleton (first rules)) dictionary))))))
-    (scan the-rules))
-
-  (defn simplify-exp [exp]
-    (try-rules
-      (if (compound? exp) (map simplify-exp exp)
-        exp) simplify-exp))
-  simplify-exp)
-
 
 (def deriv-rules
   '(
@@ -129,12 +112,21 @@
      ((dd (?v u) (? v)) 0)
      ((dd (+ (? x1) (? x2)) (? v)) (+ (dd ($ x1) ($ v))
                                      (dd ($ x2) ($ v))))
-     ((dd (* (? x1) (? x2)) (? v)) (+ (* ($ x1) (dd ($ x2) ($ v)))
-                                     (* (dd ($ x1) ($ v)) ($ x2))))
-     ((dd (** (? x) (?c n)) (? v)) (* (* ($ n) (+ ($ x) ($ (- n 1))))
-                                     (dd ($ x) ($ v))))
      ))
+(defn try-rules [exp]
+  (defn scan [deriv-rules,exp]
+    (if (or (nil? deriv-rules) (isEmpty? deriv-rules)) exp
+      (let [dictionary (match (pattern (first deriv-rules))
+                         exp
+                         make-empty-dictionary)]
+        (if (= dictionary 'failed) (scan (rest deriv-rules) exp)
+          (instantiate (skeleton (first deriv-rules)) dictionary)
+          )
+        )
+      ))
+  (scan deriv-rules exp)
+  )
 
-(def dsimp (simplifier deriv-rules))
 
-(println (dsimp '(dd (+ x y) x)))
+(println (try-rules '(dd (+ x y) x)))
+

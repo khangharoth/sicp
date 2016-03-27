@@ -126,11 +126,6 @@
   (scan deriv-rules exp)
   )
 
-(defn simplify-exp [exp]
-  (try-rules
-    (if (compound? exp) (map simplify-exp exp)
-      exp) ))
-
 
 (println (try-rules '(dd (+ x y) x)))
 
