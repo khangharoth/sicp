@@ -50,18 +50,13 @@
   (let [sim (try-rules exp)]
     (if (deriv? sim) (simplify-exp sim)
       sim
-      )
-    )
-
-  )
+      )))
 
 (defn simplify [exp fn]
   (let [sim (simplify-exp exp)]
     (if (or (seq? sim) (list? sim)) (fn sim)
       sim
-      )
-    )
-  )
+      )))
 
 (defn simplify-parts [exp]
   (list (first exp) (simplify (second exp) simplify-parts) (simplify (second (rest exp)) simplify-parts))
