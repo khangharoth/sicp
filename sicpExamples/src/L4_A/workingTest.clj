@@ -11,6 +11,7 @@
 (def user-initial-environment '())
 
 ; Expressions
+(defn deriv? [exp] (and (not (atomic? exp)) (= (first exp) 'dd)))
 
 (defn compound? [exp]
   (list? exp))
@@ -129,13 +130,15 @@
   )
 
 (defn simplify [exp]
-  (try-rules exp)
-  )
+  (cond (deriv? exp) (try-rules exp)
+    (compound? exp) (list (first exp) (simplify (second exp)) (simplify (second (rest exp))))
+    :else exp
+    ))
 
-(def poly '(+ (dd x x) (dd y x)))
+(def poly '(dd (+ x y) x))
+(def poly1 '(+ (dd x x) (dd y x)))
 
 ;;(+ (dd x x) (dd y x))
 
-(println (simplify '(dd (+ x y) x)))
-;(println (simplify poly))
+(println (simplify poly))
 
