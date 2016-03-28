@@ -1,6 +1,5 @@
-(ns L4_A.test
-  (require [L4_A.patternMatcher :refer :all])
-  )
+(ns L4_A.simplifier
+  (require [L4_A.patternMatcher :refer :all]))
 
 (defn deriv? [exp]
   (and (not (atomic? exp)) (= (first exp) 'dd)))
@@ -75,4 +74,5 @@
 
 (println (simplify poly simplify-parts))
 (println (simplify poly1 simplify-parts))
+
 
