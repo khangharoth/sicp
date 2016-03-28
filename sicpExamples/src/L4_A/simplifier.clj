@@ -33,17 +33,17 @@
      ))
 
 (defn try-rules [exp]
-  (defn scan [deriv-rules,exp]
-    (if (or (nil? deriv-rules) (isEmpty? deriv-rules)) exp
-      (let [dictionary (match (pattern (first deriv-rules))
+  (defn scan [rules]
+    (if (or (nil? rules) (isEmpty? rules)) exp
+      (let [dictionary (match (pattern (first rules))
                          exp
                          make-empty-dictionary)]
-        (if (= dictionary 'failed) (scan (rest deriv-rules) exp)
-          (instantiate (skeleton (first deriv-rules)) dictionary)
+        (if (= dictionary 'failed) (scan (rest rules))
+          (instantiate (skeleton (first rules)) dictionary)
           )
         )
       ))
-  (scan deriv-rules exp)
+  (scan deriv-rules)
   )
 
 (defn simplify-exp [exp]
