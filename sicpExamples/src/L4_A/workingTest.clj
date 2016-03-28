@@ -12,7 +12,8 @@
 
 ; Expressions
 
-(defn compound? [exp] (list? exp))
+(defn compound? [exp]
+  (list? exp))
 (defn constant? [exp] (number? exp))
 (defn variable? [exp] (atomic? exp))
 
@@ -112,6 +113,7 @@
      ((dd (+ (? x1) (? x2)) (? v)) (+ (dd ($ x1) ($ v))
                                      (dd ($ x2) ($ v))))
      ))
+
 (defn try-rules [exp]
   (defn scan [deriv-rules,exp]
     (if (or (nil? deriv-rules) (isEmpty? deriv-rules)) exp
@@ -126,6 +128,14 @@
   (scan deriv-rules exp)
   )
 
+(defn simplify [exp]
+  (try-rules exp)
+  )
 
-(println (try-rules '(dd (+ x y) x)))
+(def poly '(+ (dd x x) (dd y x)))
+
+;;(+ (dd x x) (dd y x))
+
+(println (simplify '(dd (+ x y) x)))
+;(println (simplify poly))
 
