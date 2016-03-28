@@ -2,7 +2,7 @@
   L4_A.workingTest)
 
 (defn atomic? [exp]
-  (not (list? exp)))
+  (not (or (list? exp) (seq? exp))))
 
 (defn cadr [list]
   (first (rest list)))
@@ -11,7 +11,8 @@
 (def user-initial-environment '())
 
 ; Expressions
-(defn deriv? [exp] (and (not (atomic? exp)) (= (first exp) 'dd)))
+(defn deriv? [exp]
+  (and (not (atomic? exp)) (= (first exp) 'dd)))
 
 (defn compound? [exp]
   (list? exp))
@@ -129,10 +130,20 @@
   (scan deriv-rules exp)
   )
 
+(defn simplify-exp [exp]
+  (let [sim (try-rules exp)]
+    (if (deriv? sim) (simplify-exp sim)
+      sim
+      )
+    )
+
+  )
+
 (defn simplify [exp fn]
-  (cond (deriv? exp) (try-rules exp)
-    (compound? exp) (fn exp)
-    :else exp
+  (let [sim (simplify-exp exp)]
+    (if (or (seq? sim) (list? sim)) (fn sim)
+      sim
+      )
     )
   )
 

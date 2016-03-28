@@ -3,7 +3,7 @@
   L4_A.test)
 
 (defn atomic? [exp]
-  (not (list? exp)))
+  (not (or (list? exp) (seq? exp))))
 
 (defn cadr [list]
   (first (rest list)))
@@ -12,8 +12,11 @@
 (def user-initial-environment '())
 
 ; Expressions
+(defn deriv? [exp]
+  (and (not (atomic? exp)) (= (first exp) 'dd)))
 
-(defn compound? [exp] (list? exp))
+(defn compound? [exp]
+  (list? exp))
 (defn constant? [exp] (number? exp))
 (defn variable? [exp] (atomic? exp))
 
@@ -113,6 +116,7 @@
      ((dd (+ (? x1) (? x2)) (? v)) (+ (dd ($ x1) ($ v))
                                      (dd ($ x2) ($ v))))
      ))
+
 (defn try-rules [exp]
   (defn scan [deriv-rules,exp]
     (if (or (nil? deriv-rules) (isEmpty? deriv-rules)) exp
@@ -127,6 +131,32 @@
   (scan deriv-rules exp)
   )
 
+(defn simplify-exp [exp]
+  (let [sim (try-rules exp)]
+    (if (deriv? sim) (simplify-exp sim)
+      sim
+      )
+    )
 
-(println (try-rules '(dd (+ x y) x)))
+  )
+
+(defn simplify [exp fn]
+  (let [sim (simplify-exp exp)]
+    (if (or (seq? sim) (list? sim)) (fn sim)
+      sim
+      )
+    )
+  )
+
+(defn simplify-parts [exp]
+  (list (first exp) (simplify (second exp) simplify-parts) (simplify (second (rest exp)) simplify-parts))
+  )
+
+(def poly '(dd (+ x y) x))
+(def poly1 '(+ (dd x x) (dd y x)))
+
+;;(+ (dd x x) (dd y x))
+
+(println (simplify poly simplify-parts))
+(println (simplify poly1 simplify-parts))
 
