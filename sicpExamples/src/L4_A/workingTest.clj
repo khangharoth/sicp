@@ -129,16 +129,22 @@
   (scan deriv-rules exp)
   )
 
-(defn simplify [exp]
+(defn simplify [exp fn]
   (cond (deriv? exp) (try-rules exp)
-    (compound? exp) (list (first exp) (simplify (second exp)) (simplify (second (rest exp))))
+    (compound? exp) (fn exp)
     :else exp
-    ))
+    )
+  )
+
+(defn simplify-parts [exp]
+  (list (first exp) (simplify (second exp) simplify-parts) (simplify (second (rest exp)) simplify-parts))
+  )
 
 (def poly '(dd (+ x y) x))
 (def poly1 '(+ (dd x x) (dd y x)))
 
 ;;(+ (dd x x) (dd y x))
 
-(println (simplify poly))
+(println (simplify poly simplify-parts))
+(println (simplify poly1 simplify-parts))
 
