@@ -34,7 +34,7 @@
 
 (defn try-rules [exp]
   (defn scan [rules]
-    (if (or (nil? rules) (isEmpty? rules)) exp
+    (if (isEmpty? rules) exp
       (let [dictionary (match (pattern (first rules))
                          exp
                          make-empty-dictionary)]
